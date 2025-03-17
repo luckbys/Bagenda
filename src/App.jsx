@@ -79,8 +79,20 @@ const ptBrLocaleData = {
 function App() {
   const intl = useIntl();
   const [events, setEvents] = useState([
-    { id: uuidv4(), title: 'Evento 1', start: new Date() },
-    { id: uuidv4(), title: 'Evento 2', start: new Date(new Date().setDate(new Date().getDate() + 1)) },
+    {
+      id: uuidv4(),
+      title: 'Corte de Cabelo - João Silva',
+      start: new Date(2024, 1, 15, 10, 0),
+      end: new Date(2024, 1, 15, 11, 0),
+      extendedProps: {
+        clientId: '1',
+        serviceId: '1',
+        professionalId: '1',
+        price: 50.00,
+        status: 'confirmed',
+        notes: 'Cliente preferência por corte mais curto'
+      }
+    }
   ]);
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState({ title: '', priority: 'medium', deadline: '' });
@@ -272,6 +284,11 @@ function App() {
   const [selectedService, setSelectedService] = useState('');
   const [selectedProfessional, setSelectedProfessional] = useState('');
   const [newEventDuration, setNewEventDuration] = useState(30);
+
+  const [viewMode, setViewMode] = useState('list');
+  const [groupBy, setGroupBy] = useState('none');
+  const [sortBy, setSortBy] = useState('date');
+  const [searchTerm, setSearchTerm] = useState('');
 
   const handleEventDrop = (info) => {
     const updatedEvents = events.map(event => {
@@ -622,51 +639,72 @@ function App() {
   // Função para agrupar eventos
   const groupEvents = (events, groupBy) => {
     if (groupBy === 'none') {
-      return { 'Todos os Eventos': events };
+      return [{
+        id: 'all',
+        title: 'Todos os Agendamentos',
+        events: events
+      }];
     }
 
-    return events.reduce((groups, event) => {
+    const groups = {};
+    events.forEach(event => {
       let groupKey;
       
       if (groupBy === 'date') {
-        const eventDate = new Date(event.start);
-        groupKey = eventDate.toLocaleDateString();
-      } else if (groupBy === 'category') {
-        groupKey = event.extendedProps?.category 
-          ? categories.find(c => c.id === event.extendedProps.category)?.name || 'Evento'
-          : 'Evento';
-      } else if (groupBy === 'priority') {
-        groupKey = event.extendedProps?.priority || 'Normal';
+        groupKey = new Date(event.start).toLocaleDateString();
+      } else if (groupBy === 'professional') {
+        const professional = professionals.find(p => p.id === event.extendedProps.professionalId);
+        groupKey = professional ? professional.name : 'Sem Profissional';
+      } else if (groupBy === 'service') {
+        const service = services.find(s => s.id === event.extendedProps.serviceId);
+        groupKey = service ? service.name : 'Sem Serviço';
       }
-      
+
       if (!groups[groupKey]) {
         groups[groupKey] = [];
       }
-      
       groups[groupKey].push(event);
-      return groups;
-    }, {});
+    });
+
+    return Object.entries(groups).map(([key, events]) => ({
+      id: key,
+      title: key,
+      events: events
+    }));
   };
 
   // Função para ordenar eventos
   const sortEvents = (events, sortBy) => {
-    if (sortBy === 'manual') return events;
-    
     return [...events].sort((a, b) => {
       if (sortBy === 'date') {
         return new Date(a.start) - new Date(b.start);
-      }
-      if (sortBy === 'title') {
-        return a.title.localeCompare(b.title);
-      }
-      if (sortBy === 'priority') {
-        // Ordenação por prioridade
-        const priorityOrder = { 'high': 1, 'medium': 2, 'low': 3 };
-        const aPriority = a.extendedProps?.priority || 'medium';
-        const bPriority = b.extendedProps?.priority || 'medium';
-        return priorityOrder[aPriority] - priorityOrder[bPriority];
+      } else if (sortBy === 'price') {
+        return a.extendedProps.price - b.extendedProps.price;
+      } else if (sortBy === 'duration') {
+        const durationA = new Date(a.end) - new Date(a.start);
+        const durationB = new Date(b.end) - new Date(b.start);
+        return durationA - durationB;
       }
       return 0;
+    });
+  };
+
+  // Função para filtrar eventos por termo de busca
+  const filterEvents = (events, searchTerm) => {
+    if (!searchTerm) return events;
+    
+    const term = searchTerm.toLowerCase();
+    return events.filter(event => {
+      const client = clients.find(c => c.id === event.extendedProps.clientId);
+      const professional = professionals.find(p => p.id === event.extendedProps.professionalId);
+      const service = services.find(s => s.id === event.extendedProps.serviceId);
+      
+      return (
+        client?.name.toLowerCase().includes(term) ||
+        professional?.name.toLowerCase().includes(term) ||
+        service?.name.toLowerCase().includes(term) ||
+        event.title.toLowerCase().includes(term)
+      );
     });
   };
 
