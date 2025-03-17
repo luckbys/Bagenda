@@ -8,6 +8,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { useIntl } from 'react-intl';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import { toast, Toaster } from 'react-hot-toast';
+import AuroraBackground from './components/AuroraBackground';
 import './App.css';
 
 // Definição manual do locale pt-BR para o FullCalendar
@@ -76,9 +77,9 @@ const ptBrLocaleData = {
   ]
 };
 
-function App() {
+    function App() {
   const intl = useIntl();
-  const [events, setEvents] = useState([
+      const [events, setEvents] = useState([
     {
       id: uuidv4(),
       title: 'Corte de Cabelo - João Silva',
@@ -93,11 +94,11 @@ function App() {
         notes: 'Cliente preferência por corte mais curto'
       }
     }
-  ]);
-  const [tasks, setTasks] = useState([]);
+      ]);
+      const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState({ title: '', priority: 'medium', deadline: '' });
-  const [newEventTitle, setNewEventTitle] = useState('');
-  const [newEventDate, setNewEventDate] = useState('');
+      const [newEventTitle, setNewEventTitle] = useState('');
+      const [newEventDate, setNewEventDate] = useState('');
   const [newEventTime, setNewEventTime] = useState('');
   const [newEventEndTime, setNewEventEndTime] = useState('');
   const [newEventLocation, setNewEventLocation] = useState('');
@@ -109,9 +110,9 @@ function App() {
   const [newEventReminders, setNewEventReminders] = useState(['30']); // minutos antes
   const [newEventSharedWith, setNewEventSharedWith] = useState([]);
   const [showShareModal, setShowShareModal] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState(null);
-  const [editEventTitle, setEditEventTitle] = useState('');
-  const [editEventDate, setEditEventDate] = useState('');
+      const [selectedEvent, setSelectedEvent] = useState(null);
+      const [editEventTitle, setEditEventTitle] = useState('');
+      const [editEventDate, setEditEventDate] = useState('');
   const [draggedItem, setDraggedItem] = useState(null);
   const calendarRef = useRef(null);
   const [showHelp, setShowHelp] = useState(false);
@@ -290,29 +291,29 @@ function App() {
   const [sortBy, setSortBy] = useState('date');
   const [searchTerm, setSearchTerm] = useState('');
 
-  const handleEventDrop = (info) => {
-    const updatedEvents = events.map(event => {
-      if (event.id === info.event.id) {
-        return { ...event, start: info.event.start };
-      }
-      return event;
-    });
-    setEvents(updatedEvents);
-  };
+      const handleEventDrop = (info) => {
+        const updatedEvents = events.map(event => {
+          if (event.id === info.event.id) {
+            return { ...event, start: info.event.start };
+          }
+          return event;
+        });
+        setEvents(updatedEvents);
+      };
 
-  const onDragEnd = (result) => {
+      const onDragEnd = (result) => {
     setDraggedItem(null);
     
-    if (!result.destination) {
-      return;
-    }
+        if (!result.destination) {
+          return;
+        }
 
-    const reorderedEvents = Array.from(events);
-    const [movedEvent] = reorderedEvents.splice(result.source.index, 1);
-    reorderedEvents.splice(result.destination.index, 0, movedEvent);
+        const reorderedEvents = Array.from(events);
+        const [movedEvent] = reorderedEvents.splice(result.source.index, 1);
+        reorderedEvents.splice(result.destination.index, 0, movedEvent);
 
-    setEvents(reorderedEvents);
-  };
+        setEvents(reorderedEvents);
+      };
 
   const onDragStart = (result) => {
     if (result.type === 'event') {
@@ -416,7 +417,7 @@ function App() {
     }
   };
 
-  const handleCreateEvent = () => {
+      const handleCreateEvent = () => {
     if (selectedClient && selectedService && selectedProfessional && newEventDate && newEventTime) {
       const service = services.find(s => s.id === selectedService);
       const client = clients.find(c => c.id === selectedClient);
@@ -425,8 +426,8 @@ function App() {
       const startDateTime = new Date(`${newEventDate}T${newEventTime}`);
       const endDateTime = new Date(startDateTime.getTime() + newEventDuration * 60000);
 
-      const newEvent = {
-        id: uuidv4(),
+          const newEvent = {
+            id: uuidv4(),
         title: `${service.name} - ${client.name}`,
         start: startDateTime,
         end: endDateTime,
@@ -444,7 +445,7 @@ function App() {
         classNames: ['salon-event']
       };
 
-      setEvents([...events, newEvent]);
+          setEvents([...events, newEvent]);
 
       // Atualizar histórico do cliente
       const updatedClients = clients.map(c => {
@@ -473,7 +474,7 @@ function App() {
       setSelectedClient('');
       setSelectedService('');
       setSelectedProfessional('');
-      setNewEventDate('');
+          setNewEventDate('');
       setNewEventTime('');
       setNewEventEndTime('');
       setNewEventDuration(30);
@@ -559,60 +560,60 @@ function App() {
     console.log(`Enviando e-mail de lembrete para ${event.extendedProps.sharedWith.join(', ')}`);
   };
 
-  const handleEventClick = (info) => {
-    setSelectedEvent(info.event);
+      const handleEventClick = (info) => {
+        setSelectedEvent(info.event);
     setShowEventDetailsModal(true);
-  };
+      };
 
-  const handleEditEvent = () => {
-    if (selectedEvent) {
-      const updatedEvents = events.map(event => {
-        if (event.id === selectedEvent.id) {
-          return { ...event, title: editEventTitle, start: new Date(editEventDate) };
+      const handleEditEvent = () => {
+        if (selectedEvent) {
+          const updatedEvents = events.map(event => {
+            if (event.id === selectedEvent.id) {
+              return { ...event, title: editEventTitle, start: new Date(editEventDate) };
+            }
+            return event;
+          });
+          setEvents(updatedEvents);
+          setSelectedEvent(null);
         }
-        return event;
-      });
-      setEvents(updatedEvents);
-      setSelectedEvent(null);
-    }
-  };
+      };
 
-  const handleDeleteEvent = () => {
-    if (selectedEvent) {
-      const updatedEvents = events.filter(event => event.id !== selectedEvent.id);
-      setEvents(updatedEvents);
-      setSelectedEvent(null);
-    }
-  };
+      const handleDeleteEvent = () => {
+        if (selectedEvent) {
+          const updatedEvents = events.filter(event => event.id !== selectedEvent.id);
+          setEvents(updatedEvents);
+          setSelectedEvent(null);
+        }
+      };
 
-  const handleTaskInputChange = (e) => {
-    setNewTask({ ...newTask, [e.target.name]: e.target.value });
-  };
+      const handleTaskInputChange = (e) => {
+        setNewTask({ ...newTask, [e.target.name]: e.target.value });
+      };
 
-  const handleAddTask = () => {
-    if (newTask.title) {
-      setTasks([...tasks, { ...newTask, id: uuidv4() }]);
+      const handleAddTask = () => {
+        if (newTask.title) {
+          setTasks([...tasks, { ...newTask, id: uuidv4() }]);
       setNewTask({ title: '', priority: 'medium', deadline: '' });
-    }
-  };
+        }
+      };
 
-  const handleDeleteTask = (id) => {
-    setTasks(tasks.filter(task => task.id !== id));
-  };
+      const handleDeleteTask = (id) => {
+        setTasks(tasks.filter(task => task.id !== id));
+      };
 
-  const onTaskDragEnd = (result) => {
+      const onTaskDragEnd = (result) => {
     setDraggedItem(null);
     
-    if (!result.destination) {
-      return;
-    }
+        if (!result.destination) {
+          return;
+        }
 
-    const reorderedTasks = Array.from(tasks);
-    const [movedTask] = reorderedTasks.splice(result.source.index, 1);
-    reorderedTasks.splice(result.destination.index, 0, movedTask);
+        const reorderedTasks = Array.from(tasks);
+        const [movedTask] = reorderedTasks.splice(result.source.index, 1);
+        reorderedTasks.splice(result.destination.index, 0, movedTask);
 
-    setTasks(reorderedTasks);
-  };
+        setTasks(reorderedTasks);
+      };
 
   const onTaskDragStart = (result) => {
     const draggedTask = tasks.find((task, index) => index === result.source.index);
@@ -698,7 +699,7 @@ function App() {
       const client = clients.find(c => c.id === event.extendedProps.clientId);
       const professional = professionals.find(p => p.id === event.extendedProps.professionalId);
       const service = services.find(s => s.id === event.extendedProps.serviceId);
-      
+
       return (
         client?.name.toLowerCase().includes(term) ||
         professional?.name.toLowerCase().includes(term) ||
@@ -979,6 +980,7 @@ function App() {
   return (
     <GoogleOAuthProvider clientId="301770710898-nlkb9lea02sk9irh4vpdth0m0ingrv90.apps.googleusercontent.com">
       <div className="container-fluid py-4">
+        <AuroraBackground />
         <Toaster 
           position="top-right"
           toastOptions={{
@@ -1051,7 +1053,7 @@ function App() {
               Configurações
             </button>
           </div>
-        </div>
+              </div>
 
         {/* Layout Principal */}
         <div className="row">
@@ -1079,8 +1081,8 @@ function App() {
                     >
                       <i className="bi bi-grid"></i>
                     </button>
-                  </div>
-                  
+              </div>
+
                   <select 
                     className="form-select form-select-sm" 
                     value={eventGrouping}
@@ -1104,8 +1106,8 @@ function App() {
                     <option value="title">{intl.formatMessage({ id: 'events.sort.title' })}</option>
                     <option value="priority">{intl.formatMessage({ id: 'events.sort.priority' })}</option>
                   </select>
-                </div>
               </div>
+            </div>
               <div className="card-body p-2">
                 <DragDropContext onDragEnd={onDragEnd} onDragStart={onDragStart}>
                   <Droppable droppableId="events-list" type="event">
@@ -1117,20 +1119,20 @@ function App() {
                       >
                         <div className={eventView === 'list' ? 'list-group' : 'row g-2'}>
                           {sortEvents(events, eventSorting).map((event, index) => (
-                            <Draggable key={event.id} draggableId={event.id} index={index}>
+                          <Draggable key={event.id} draggableId={event.id} index={index}>
                               {(provided, snapshot) => (
                                 <div
-                                  ref={provided.innerRef}
-                                  {...provided.draggableProps}
-                                  {...provided.dragHandleProps}
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                {...provided.dragHandleProps}
                                   className={`event-item ${snapshot.isDragging ? 'dragging' : ''}`}
                                   data-category={event.extendedProps?.category || 'evento'}
                                   onClick={() => handleEventClick({ event })}
-                                >
+                              >
                                   <div className="event-content">
                                     <div className="event-title">
                                       <i className={`bi ${getCategoryIcon(event.extendedProps?.category)}`}></i>
-                                      {event.title}
+                                {event.title}
                                       <span className="event-category-badge" style={{
                                         backgroundColor: categories.find(c => c.id === event.extendedProps?.category)?.color + '20',
                                         color: categories.find(c => c.id === event.extendedProps?.category)?.color
@@ -1162,10 +1164,10 @@ function App() {
                                     )}
                                   </div>
                                 </div>
-                              )}
-                            </Draggable>
-                          ))}
-                          {provided.placeholder}
+                            )}
+                          </Draggable>
+                        ))}
+                        {provided.placeholder}
                         </div>
                       </div>
                     )}
@@ -1173,7 +1175,7 @@ function App() {
                 </DragDropContext>
               </div>
             </div>
-          </div>
+              </div>
 
           {/* Calendário */}
           <div className="col-md-9 mb-4">
@@ -1501,7 +1503,7 @@ function App() {
                               required
                             />
                           </div>
-                        </div>
+              </div>
 
                         {selectedProfessional && (
                           <div className="professional-schedule p-3 bg-light rounded">
@@ -1626,8 +1628,8 @@ function App() {
                   <form onSubmit={(e) => { e.preventDefault(); handleAddTask(); setShowTaskModal(false); }}>
                     <div className="mb-3">
                       <label className="form-label">{intl.formatMessage({ id: 'modal.newTask.title' })}</label>
-                      <input
-                        type="text"
+                  <input
+                    type="text"
                         className="form-control"
                         name="title"
                         value={newTask.title}
@@ -1651,8 +1653,8 @@ function App() {
                     </div>
                     <div className="mb-3">
                       <label className="form-label">{intl.formatMessage({ id: 'modal.newTask.deadline' })}</label>
-                      <input
-                        type="date"
+                  <input
+                    type="date"
                         className="form-control"
                         name="deadline"
                         value={newTask.deadline}
@@ -1674,9 +1676,9 @@ function App() {
                   </form>
                 </div>
               </div>
-            </div>
-          </div>
-        )}
+                  </div>
+                </div>
+              )}
 
         {/* Modal de configurações */}
         {showSettingsModal && (
@@ -1693,7 +1695,7 @@ function App() {
                     className="btn-close btn-close-white" 
                     onClick={() => setShowSettingsModal(false)}
                   ></button>
-                </div>
+            </div>
                 <div className="modal-body">
                   <div className="mb-4">
                     <h6>{intl.formatMessage({ id: 'settings.google.title' })}</h6>
@@ -1726,8 +1728,8 @@ function App() {
                             <i className="bi bi-x-circle me-1"></i>
                             {intl.formatMessage({ id: 'settings.google.disconnect' })}
                           </button>
-                        </div>
-                      </div>
+          </div>
+        </div>
                     ) : (
                       <div>
                         <p className="text-muted">
@@ -2346,10 +2348,10 @@ function App() {
         )}
       </div>
     </GoogleOAuthProvider>
-  );
-}
+      );
+    }
 
-export default App;
+    export default App;
 
 // Funções auxiliares para o status
 const getStatusColor = (status) => {
