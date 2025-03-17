@@ -6,17 +6,23 @@ WORKDIR /app
 # Copiar arquivos de dependências
 COPY package*.json ./
 
-# Instalar dependências
-RUN npm install
+# Instalar dependências e Vite globalmente
+RUN npm install && \
+    npm install -g vite
 
 # Copiar o resto dos arquivos
 COPY . .
 
-# Garantir permissões corretas
-RUN chown -R node:node /app
+# Criar diretório .cache e ajustar permissões
+RUN mkdir -p /app/node_modules/.cache && \
+    chown -R node:node /app && \
+    chmod -R 755 /app
 
 # Mudar para o usuário node
 USER node
+
+# Definir variável de ambiente para o cache do Vite
+ENV VITE_CACHE_DIR=/app/node_modules/.cache
 
 # Build da aplicação
 RUN npm run build
