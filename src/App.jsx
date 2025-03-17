@@ -1258,7 +1258,7 @@ function App() {
         {/* Modal de Agendamento */}
         {showEventModal && (
           <div className="modal fade show" style={{ display: 'block' }}>
-            <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-dialog modal-dialog-centered modal-lg">
               <div className="modal-content">
                 <div className="modal-header bg-primary text-white">
                   <h5 className="modal-title">
@@ -1268,7 +1268,16 @@ function App() {
                   <button 
                     type="button" 
                     className="btn-close btn-close-white" 
-                    onClick={() => setShowEventModal(false)}
+                    onClick={() => {
+                      setShowEventModal(false);
+                      setFormStep(1);
+                      setSelectedClient('');
+                      setSelectedService('');
+                      setSelectedProfessional('');
+                      setNewEventDate('');
+                      setNewEventTime('');
+                      setNewEventDescription('');
+                    }}
                   ></button>
                 </div>
                 <div className="modal-body">
@@ -1289,17 +1298,17 @@ function App() {
                         <button 
                           className="btn btn-link p-0 border-0 bg-transparent"
                           onClick={() => setFormStep(2)}
-                          disabled={formStep === 2 || !newEventTitle}
+                          disabled={formStep === 2 || !selectedClient || !selectedService}
                         >
                           <i className="bi bi-2-circle me-1"></i>
-                          Data e Hora
+                          Profissional e Horário
                         </button>
                       </li>
                       <li className={`breadcrumb-item ${formStep === 3 ? 'active' : ''}`}>
                         <button 
                           className="btn btn-link p-0 border-0 bg-transparent"
                           onClick={() => setFormStep(3)}
-                          disabled={formStep === 3 || !newEventDate}
+                          disabled={formStep === 3 || !selectedProfessional || !newEventDate}
                         >
                           <i className="bi bi-3-circle me-1"></i>
                           Confirmação
@@ -1308,132 +1317,212 @@ function App() {
                     </ol>
                   </nav>
 
-                  <form onSubmit={(e) => { e.preventDefault(); handleCreateEvent(); setShowEventModal(false); }}>
+                  <form onSubmit={(e) => { e.preventDefault(); handleCreateEvent(); }}>
                     {/* Etapa 1: Cliente e Serviço */}
                     {formStep === 1 && (
                       <div className="step-content">
-                        <div className="mb-3">
-                          <label className="form-label">{intl.formatMessage({ id: 'modal.newEvent.title' })}</label>
-                          <input
-                            type="text"
-                            className="form-control"
-                            value={newEventTitle}
-                            onChange={(e) => setNewEventTitle(e.target.value)}
-                            placeholder={intl.formatMessage({ id: 'modal.newEvent.titlePlaceholder' })}
-                            required
-                          />
+                        <div className="mb-4">
+                          <label className="form-label">
+                            <i className="bi bi-person me-2"></i>
+                            Selecione o Cliente
+                          </label>
+                          <div className="input-group mb-2">
+                            <select
+                              className="form-select"
+                              value={selectedClient}
+                              onChange={(e) => setSelectedClient(e.target.value)}
+                              required
+                            >
+                              <option value="">Selecione um cliente...</option>
+                              {clients.map(client => (
+                                <option key={client.id} value={client.id}>
+                                  {client.name} - {client.phone}
+                                </option>
+                              ))}
+                            </select>
+                            <button
+                              type="button"
+                              className="btn btn-outline-primary"
+                              onClick={() => setShowClientModal(true)}
+                            >
+                              <i className="bi bi-person-plus"></i>
+                            </button>
+                          </div>
+                          {selectedClient && (
+                            <div className="client-info p-2 bg-light rounded">
+                              <small className="text-muted">
+                                {clients.find(c => c.id === selectedClient)?.preferences || 'Sem preferências registradas'}
+                              </small>
+                            </div>
+                          )}
                         </div>
-                        <div className="mb-3">
-                          <label className="form-label">{intl.formatMessage({ id: 'modal.newEvent.category' })}</label>
+
+                        <div className="mb-4">
+                          <label className="form-label">
+                            <i className="bi bi-scissors me-2"></i>
+                            Selecione o Serviço
+                          </label>
                           <select
                             className="form-select"
-                            value={newEventCategory}
-                            onChange={(e) => setNewEventCategory(e.target.value)}
+                            value={selectedService}
+                            onChange={(e) => {
+                              setSelectedService(e.target.value);
+                              const service = services.find(s => s.id === e.target.value);
+                              if (service) {
+                                setNewEventDuration(service.duration);
+                              }
+                            }}
+                            required
                           >
-                            {categories.map(category => (
-                              <option key={category.id} value={category.id}>
-                                {category.name}
-                              </option>
+                            <option value="">Selecione um serviço...</option>
+                            {serviceCategories.map(category => (
+                              <optgroup key={category.id} label={category.name}>
+                                {services
+                                  .filter(service => service.category === category.id)
+                                  .map(service => (
+                                    <option key={service.id} value={service.id}>
+                                      {service.name} - R$ {service.price.toFixed(2)} ({service.duration}min)
+                                    </option>
+                                  ))}
+                              </optgroup>
                             ))}
                           </select>
                         </div>
+
                         <div className="mb-3">
-                          <label className="form-label">{intl.formatMessage({ id: 'modal.newEvent.description' })}</label>
+                          <label className="form-label">
+                            <i className="bi bi-card-text me-2"></i>
+                            Observações
+                          </label>
                           <textarea
                             className="form-control"
                             value={newEventDescription}
                             onChange={(e) => setNewEventDescription(e.target.value)}
-                            placeholder={intl.formatMessage({ id: 'modal.newEvent.descriptionPlaceholder' })}
+                            placeholder="Observações especiais para o atendimento..."
                             rows="3"
                           ></textarea>
                         </div>
                       </div>
                     )}
 
-                    {/* Etapa 2: Data e hora */}
+                    {/* Etapa 2: Profissional e Horário */}
                     {formStep === 2 && (
                       <div className="step-content">
-                        <div className="mb-3">
-                          <label className="form-label">{intl.formatMessage({ id: 'modal.newEvent.startDate' })}</label>
-                          <input
-                            type="date"
-                            className="form-control"
-                            value={newEventDate}
-                            onChange={(e) => setNewEventDate(e.target.value)}
+                        <div className="mb-4">
+                          <label className="form-label">
+                            <i className="bi bi-person-badge me-2"></i>
+                            Selecione o Profissional
+                          </label>
+                          <select
+                            className="form-select"
+                            value={selectedProfessional}
+                            onChange={(e) => setSelectedProfessional(e.target.value)}
                             required
-                          />
+                          >
+                            <option value="">Selecione um profissional...</option>
+                            {professionals
+                              .filter(prof => {
+                                const service = services.find(s => s.id === selectedService);
+                                return service ? prof.specialties.includes(service.category) : true;
+                              })
+                              .map(professional => (
+                                <option key={professional.id} value={professional.id}>
+                                  {professional.name} - {professional.specialties.map(s => 
+                                    serviceCategories.find(cat => cat.id === s)?.name
+                                  ).join(', ')}
+                                </option>
+                              ))}
+                          </select>
                         </div>
-                        <div className="mb-3">
-                          <label className="form-label">{intl.formatMessage({ id: 'modal.newEvent.startTime' })}</label>
-                          <input
-                            type="time"
-                            className="form-control"
-                            value={newEventTime}
-                            onChange={(e) => setNewEventTime(e.target.value)}
-                          />
+
+                        <div className="row mb-4">
+                          <div className="col-md-6">
+                            <label className="form-label">
+                              <i className="bi bi-calendar-date me-2"></i>
+                              Data
+                            </label>
+                            <input
+                              type="date"
+                              className="form-control"
+                              value={newEventDate}
+                              onChange={(e) => setNewEventDate(e.target.value)}
+                              min={new Date().toISOString().split('T')[0]}
+                              required
+                            />
+                          </div>
+                          <div className="col-md-6">
+                            <label className="form-label">
+                              <i className="bi bi-clock me-2"></i>
+                              Horário
+                            </label>
+                            <input
+                              type="time"
+                              className="form-control"
+                              value={newEventTime}
+                              onChange={(e) => setNewEventTime(e.target.value)}
+                              required
+                            />
+                          </div>
                         </div>
-                        <div className="mb-3">
-                          <label className="form-label">{intl.formatMessage({ id: 'modal.newEvent.endDate' })}</label>
-                          <input
-                            type="date"
-                            className="form-control"
-                            value={newEventEndDate}
-                            onChange={(e) => setNewEventEndDate(e.target.value)}
-                          />
-                        </div>
-                        <div className="mb-3">
-                          <label className="form-label">{intl.formatMessage({ id: 'modal.newEvent.endTime' })}</label>
-                          <input
-                            type="time"
-                            className="form-control"
-                            value={newEventEndTime}
-                            onChange={(e) => setNewEventEndTime(e.target.value)}
-                          />
-                        </div>
-                        <div className="mb-3">
-                          <label className="form-label">{intl.formatMessage({ id: 'modal.newEvent.location' })}</label>
-                          <input
-                            type="text"
-                            className="form-control"
-                            value={newEventLocation}
-                            onChange={(e) => setNewEventLocation(e.target.value)}
-                            placeholder={intl.formatMessage({ id: 'modal.newEvent.locationPlaceholder' })}
-                          />
-                        </div>
+
+                        {selectedProfessional && (
+                          <div className="professional-schedule p-3 bg-light rounded">
+                            <h6 className="mb-2">Horário do Profissional</h6>
+                            <div className="d-flex justify-content-between">
+                              <small>
+                                <i className="bi bi-clock-history me-1"></i>
+                                Expediente: {professionals.find(p => p.id === selectedProfessional)?.schedule.start} - {professionals.find(p => p.id === selectedProfessional)?.schedule.end}
+                              </small>
+                              <small>
+                                <i className="bi bi-cup-hot me-1"></i>
+                                Intervalo: {professionals.find(p => p.id === selectedProfessional)?.schedule.breakStart} - {professionals.find(p => p.id === selectedProfessional)?.schedule.breakEnd}
+                              </small>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
 
-                    {/* Etapa 3: Opções adicionais */}
+                    {/* Etapa 3: Confirmação */}
                     {formStep === 3 && (
                       <div className="step-content">
-                        <div className="mb-3">
-                          <label className="form-label">{intl.formatMessage({ id: 'modal.newEvent.recurrence' })}</label>
-                          <select
-                            className="form-select"
-                            value={newEventRecurrence}
-                            onChange={(e) => setNewEventRecurrence(e.target.value)}
-                          >
-                            <option value="none">{intl.formatMessage({ id: 'recurrence.none' })}</option>
-                            <option value="daily">{intl.formatMessage({ id: 'recurrence.daily' })}</option>
-                            <option value="weekly">{intl.formatMessage({ id: 'recurrence.weekly' })}</option>
-                            <option value="monthly">{intl.formatMessage({ id: 'recurrence.monthly' })}</option>
-                            <option value="yearly">{intl.formatMessage({ id: 'recurrence.yearly' })}</option>
-                          </select>
-                        </div>
-                        <div className="mb-3">
-                          <label className="form-label">{intl.formatMessage({ id: 'modal.newEvent.reminders' })}</label>
-                          <select
-                            className="form-select"
-                            value={newEventReminders[0]}
-                            onChange={(e) => setNewEventReminders([e.target.value])}
-                          >
-                            <option value="0">{intl.formatMessage({ id: 'reminders.atTime' })}</option>
-                            <option value="5">{intl.formatMessage({ id: 'reminders.5min' })}</option>
-                            <option value="15">{intl.formatMessage({ id: 'reminders.15min' })}</option>
-                            <option value="30">{intl.formatMessage({ id: 'reminders.30min' })}</option>
-                            <option value="60">{intl.formatMessage({ id: 'reminders.1hour' })}</option>
-                            <option value="1440">{intl.formatMessage({ id: 'reminders.1day' })}</option>
-                          </select>
+                        <div className="confirmation-details">
+                          <div className="detail-item">
+                            <div className="detail-label">Cliente:</div>
+                            <div className="detail-value">
+                              {clients.find(c => c.id === selectedClient)?.name}
+                            </div>
+                          </div>
+                          <div className="detail-item">
+                            <div className="detail-label">Serviço:</div>
+                            <div className="detail-value">
+                              {services.find(s => s.id === selectedService)?.name}
+                              <span className="badge bg-success ms-2">
+                                R$ {services.find(s => s.id === selectedService)?.price.toFixed(2)}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="detail-item">
+                            <div className="detail-label">Profissional:</div>
+                            <div className="detail-value">
+                              {professionals.find(p => p.id === selectedProfessional)?.name}
+                            </div>
+                          </div>
+                          <div className="detail-item">
+                            <div className="detail-label">Data e Hora:</div>
+                            <div className="detail-value">
+                              {new Date(`${newEventDate}T${newEventTime}`).toLocaleDateString()} às {newEventTime}
+                              <small className="text-muted ms-2">
+                                (Duração: {newEventDuration} minutos)
+                              </small>
+                            </div>
+                          </div>
+                          {newEventDescription && (
+                            <div className="detail-item">
+                              <div className="detail-label">Observações:</div>
+                              <div className="detail-value">{newEventDescription}</div>
+                            </div>
+                          )}
                         </div>
                       </div>
                     )}
@@ -1442,10 +1531,11 @@ function App() {
                       {formStep > 1 && (
                         <button
                           type="button"
-                          className="btn btn-secondary"
+                          className="btn btn-outline-secondary"
                           onClick={() => setFormStep(formStep - 1)}
                         >
-                          {intl.formatMessage({ id: 'button.back' })}
+                          <i className="bi bi-arrow-left me-1"></i>
+                          Voltar
                         </button>
                       )}
                       {formStep < 3 ? (
@@ -1453,17 +1543,21 @@ function App() {
                           type="button"
                           className="btn btn-primary"
                           onClick={() => setFormStep(formStep + 1)}
-                          disabled={formStep === 1 && !newEventTitle || formStep === 2 && !newEventDate}
+                          disabled={
+                            (formStep === 1 && (!selectedClient || !selectedService)) ||
+                            (formStep === 2 && (!selectedProfessional || !newEventDate || !newEventTime))
+                          }
                         >
-                          {intl.formatMessage({ id: 'button.next' })}
+                          Próximo
+                          <i className="bi bi-arrow-right ms-1"></i>
                         </button>
                       ) : (
                         <button
                           type="submit"
-                          className="btn btn-primary"
-                          disabled={!newEventTitle || !newEventDate}
+                          className="btn btn-success"
                         >
-                          {intl.formatMessage({ id: 'modal.save' })}
+                          <i className="bi bi-check-lg me-1"></i>
+                          Confirmar Agendamento
                         </button>
                       )}
                     </div>
@@ -1727,4 +1821,521 @@ function App() {
 
                     {/* Data e Hora */}
                     <div className="event-detail-item">
-                      <div className="detail-ic
+                      <div className="detail-icon">
+                        <i className="bi bi-clock"></i>
+                      </div>
+                      <div className="detail-content">
+                        <h6>Data e Hora</h6>
+                        <p className="mb-0">
+                          {new Date(selectedEvent.start).toLocaleDateString()} - {new Date(selectedEvent.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          {selectedEvent.end && (
+                            <>
+                              <br />
+                              <small className="text-muted">
+                                Término previsto: {new Date(selectedEvent.end).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </small>
+                            </>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Status */}
+                    <div className="event-detail-item">
+                      <div className="detail-icon">
+                        <i className="bi bi-check-circle"></i>
+                      </div>
+                      <div className="detail-content">
+                        <h6>Status</h6>
+                        <span className={`badge bg-${getStatusColor(selectedEvent.extendedProps?.status)}`}>
+                          {getStatusText(selectedEvent.extendedProps?.status)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Observações */}
+                    {selectedEvent.extendedProps?.description && (
+                      <div className="event-detail-item">
+                        <div className="detail-icon">
+                          <i className="bi bi-card-text"></i>
+                        </div>
+                        <div className="detail-content">
+                          <h6>Observações</h6>
+                          <p className="mb-0">{selectedEvent.extendedProps.description}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="modal-footer">
+                  <button
+                    type="button"
+                    className="btn btn-outline-danger"
+                    onClick={handleDeleteEvent}
+                  >
+                    <i className="bi bi-trash me-1"></i>
+                    Cancelar Agendamento
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={() => setShowEventDetailsModal(false)}
+                  >
+                    <i className="bi bi-check2 me-1"></i>
+                    Fechar
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal de Cadastro de Cliente */}
+        {showClientModal && (
+          <div className="modal fade show" style={{ display: 'block' }}>
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content">
+                <div className="modal-header bg-primary text-white">
+                  <h5 className="modal-title">
+                    <i className="bi bi-person-plus me-2"></i>
+                    {intl.formatMessage({ id: 'modal.client.title' })}
+                  </h5>
+                  <button 
+                    type="button" 
+                    className="btn-close btn-close-white" 
+                    onClick={() => setShowClientModal(false)}
+                  ></button>
+                </div>
+                <div className="modal-body">
+                  <form onSubmit={(e) => { e.preventDefault(); handleAddClient(); }}>
+                    <div className="mb-3">
+                      <label className="form-label">Nome</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={newClient.name}
+                        onChange={(e) => setNewClient({ ...newClient, name: e.target.value })}
+                        required
+                      />
+                    </div>
+                    <div className="mb-3">
+                      <label className="form-label">Telefone</label>
+                      <input
+                        type="tel"
+                        className="form-control"
+                        value={newClient.phone}
+                        onChange={(e) => setNewClient({ ...newClient, phone: e.target.value })}
+                        required
+                      />
+                    </div>
+                    <div className="mb-3">
+                      <label className="form-label">E-mail</label>
+                      <input
+                        type="email"
+                        className="form-control"
+                        value={newClient.email}
+                        onChange={(e) => setNewClient({ ...newClient, email: e.target.value })}
+                      />
+                    </div>
+                    <div className="mb-3">
+                      <label className="form-label">Preferências/Observações</label>
+                      <textarea
+                        className="form-control"
+                        value={newClient.preferences}
+                        onChange={(e) => setNewClient({ ...newClient, preferences: e.target.value })}
+                        rows="3"
+                      ></textarea>
+                    </div>
+                    <div className="modal-footer">
+                      <button
+                        type="button"
+                        className="btn btn-secondary"
+                        onClick={() => setShowClientModal(false)}
+                      >
+                        Cancelar
+                      </button>
+                      <button type="submit" className="btn btn-primary">
+                        Salvar
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal de Cadastro de Serviço */}
+        {showServiceModal && (
+          <div className="modal fade show" style={{ display: 'block' }}>
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content">
+                <div className="modal-header bg-success text-white">
+                  <h5 className="modal-title">
+                    <i className="bi bi-scissors me-2"></i>
+                    {intl.formatMessage({ id: 'modal.service.title' })}
+                  </h5>
+                  <button 
+                    type="button" 
+                    className="btn-close btn-close-white" 
+                    onClick={() => setShowServiceModal(false)}
+                  ></button>
+                </div>
+                <div className="modal-body">
+                  <form onSubmit={(e) => { e.preventDefault(); handleAddService(); }}>
+                    <div className="mb-3">
+                      <label className="form-label">Nome do Serviço</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={newService.name}
+                        onChange={(e) => setNewService({ ...newService, name: e.target.value })}
+                        required
+                      />
+                    </div>
+                    <div className="mb-3">
+                      <label className="form-label">Categoria</label>
+                      <select
+                        className="form-select"
+                        value={newService.category}
+                        onChange={(e) => setNewService({ ...newService, category: e.target.value })}
+                        required
+                      >
+                        <option value="">Selecione uma categoria</option>
+                        {serviceCategories.map(category => (
+                          <option key={category.id} value={category.id}>
+                            {category.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="row mb-3">
+                      <div className="col">
+                        <label className="form-label">Duração (minutos)</label>
+                        <input
+                          type="number"
+                          className="form-control"
+                          value={newService.duration}
+                          onChange={(e) => setNewService({ ...newService, duration: parseInt(e.target.value) })}
+                          min="15"
+                          step="15"
+                          required
+                        />
+                      </div>
+                      <div className="col">
+                        <label className="form-label">Preço (R$)</label>
+                        <input
+                          type="number"
+                          className="form-control"
+                          value={newService.price}
+                          onChange={(e) => setNewService({ ...newService, price: parseFloat(e.target.value) })}
+                          min="0"
+                          step="0.01"
+                          required
+                        />
+                      </div>
+                    </div>
+                    <div className="mb-3">
+                      <label className="form-label">Descrição</label>
+                      <textarea
+                        className="form-control"
+                        value={newService.description}
+                        onChange={(e) => setNewService({ ...newService, description: e.target.value })}
+                        rows="3"
+                      ></textarea>
+                    </div>
+                    <div className="modal-footer">
+                      <button
+                        type="button"
+                        className="btn btn-secondary"
+                        onClick={() => setShowServiceModal(false)}
+                      >
+                        Cancelar
+                      </button>
+                      <button type="submit" className="btn btn-success">
+                        Salvar
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal de Cadastro de Profissional */}
+        {showProfessionalModal && (
+          <div className="modal fade show" style={{ display: 'block' }}>
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content">
+                <div className="modal-header bg-info text-white">
+                  <h5 className="modal-title">
+                    <i className="bi bi-person-badge me-2"></i>
+                    {intl.formatMessage({ id: 'modal.professional.title' })}
+                  </h5>
+                  <button 
+                    type="button" 
+                    className="btn-close btn-close-white" 
+                    onClick={() => setShowProfessionalModal(false)}
+                  ></button>
+                </div>
+                <div className="modal-body">
+                  <form onSubmit={(e) => { e.preventDefault(); handleAddProfessional(); }}>
+                    <div className="mb-3">
+                      <label className="form-label">Nome</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={newProfessional.name}
+                        onChange={(e) => setNewProfessional({ ...newProfessional, name: e.target.value })}
+                        required
+                      />
+                    </div>
+                    <div className="mb-3">
+                      <label className="form-label">Especialidades</label>
+                      <div className="d-flex flex-wrap gap-2">
+                        {serviceCategories.map(category => (
+                          <div key={category.id} className="form-check">
+                            <input
+                              type="checkbox"
+                              className="form-check-input"
+                              id={`specialty-${category.id}`}
+                              checked={newProfessional.specialties.includes(category.id)}
+                              onChange={(e) => {
+                                const specialties = e.target.checked
+                                  ? [...newProfessional.specialties, category.id]
+                                  : newProfessional.specialties.filter(s => s !== category.id);
+                                setNewProfessional({ ...newProfessional, specialties });
+                              }}
+                            />
+                            <label className="form-check-label" htmlFor={`specialty-${category.id}`}>
+                              {category.name}
+                            </label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="row mb-3">
+                      <div className="col">
+                        <label className="form-label">Início do Expediente</label>
+                        <input
+                          type="time"
+                          className="form-control"
+                          value={newProfessional.schedule.start}
+                          onChange={(e) => setNewProfessional({
+                            ...newProfessional,
+                            schedule: { ...newProfessional.schedule, start: e.target.value }
+                          })}
+                          required
+                        />
+                      </div>
+                      <div className="col">
+                        <label className="form-label">Fim do Expediente</label>
+                        <input
+                          type="time"
+                          className="form-control"
+                          value={newProfessional.schedule.end}
+                          onChange={(e) => setNewProfessional({
+                            ...newProfessional,
+                            schedule: { ...newProfessional.schedule, end: e.target.value }
+                          })}
+                          required
+                        />
+                      </div>
+                    </div>
+                    <div className="row mb-3">
+                      <div className="col">
+                        <label className="form-label">Início do Intervalo</label>
+                        <input
+                          type="time"
+                          className="form-control"
+                          value={newProfessional.schedule.breakStart}
+                          onChange={(e) => setNewProfessional({
+                            ...newProfessional,
+                            schedule: { ...newProfessional.schedule, breakStart: e.target.value }
+                          })}
+                          required
+                        />
+                      </div>
+                      <div className="col">
+                        <label className="form-label">Fim do Intervalo</label>
+                        <input
+                          type="time"
+                          className="form-control"
+                          value={newProfessional.schedule.breakEnd}
+                          onChange={(e) => setNewProfessional({
+                            ...newProfessional,
+                            schedule: { ...newProfessional.schedule, breakEnd: e.target.value }
+                          })}
+                          required
+                        />
+                      </div>
+                    </div>
+                    <div className="mb-3">
+                      <label className="form-label">Cor no Calendário</label>
+                      <input
+                        type="color"
+                        className="form-control form-control-color w-100"
+                        value={newProfessional.color}
+                        onChange={(e) => setNewProfessional({ ...newProfessional, color: e.target.value })}
+                        title="Escolha uma cor"
+                      />
+                    </div>
+                    <div className="modal-footer">
+                      <button
+                        type="button"
+                        className="btn btn-secondary"
+                        onClick={() => setShowProfessionalModal(false)}
+                      >
+                        Cancelar
+                      </button>
+                      <button type="submit" className="btn btn-info">
+                        Salvar
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal de Cadastro de Produto */}
+        {showProductModal && (
+          <div className="modal fade show" style={{ display: 'block' }}>
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content">
+                <div className="modal-header bg-warning text-dark">
+                  <h5 className="modal-title">
+                    <i className="bi bi-box-seam me-2"></i>
+                    {intl.formatMessage({ id: 'modal.product.title' })}
+                  </h5>
+                  <button 
+                    type="button" 
+                    className="btn-close" 
+                    onClick={() => setShowProductModal(false)}
+                  ></button>
+                </div>
+                <div className="modal-body">
+                  <form onSubmit={(e) => { e.preventDefault(); handleAddProduct(); }}>
+                    <div className="mb-3">
+                      <label className="form-label">Nome do Produto</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={newProduct.name}
+                        onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
+                        required
+                      />
+                    </div>
+                    <div className="mb-3">
+                      <label className="form-label">Marca</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={newProduct.brand}
+                        onChange={(e) => setNewProduct({ ...newProduct, brand: e.target.value })}
+                        required
+                      />
+                    </div>
+                    <div className="row mb-3">
+                      <div className="col">
+                        <label className="form-label">Preço (R$)</label>
+                        <input
+                          type="number"
+                          className="form-control"
+                          value={newProduct.price}
+                          onChange={(e) => setNewProduct({ ...newProduct, price: parseFloat(e.target.value) })}
+                          min="0"
+                          step="0.01"
+                          required
+                        />
+                      </div>
+                      <div className="col">
+                        <label className="form-label">Estoque</label>
+                        <input
+                          type="number"
+                          className="form-control"
+                          value={newProduct.stock}
+                          onChange={(e) => setNewProduct({ ...newProduct, stock: parseInt(e.target.value) })}
+                          min="0"
+                          required
+                        />
+                      </div>
+                    </div>
+                    <div className="mb-3">
+                      <label className="form-label">Categoria</label>
+                      <select
+                        className="form-select"
+                        value={newProduct.category}
+                        onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
+                        required
+                      >
+                        <option value="">Selecione uma categoria</option>
+                        <option value="cabelo">Cabelo</option>
+                        <option value="barba">Barba</option>
+                        <option value="manicure">Manicure</option>
+                        <option value="pedicure">Pedicure</option>
+                        <option value="estetica">Estética</option>
+                      </select>
+                    </div>
+                    <div className="mb-3">
+                      <label className="form-label">Descrição</label>
+                      <textarea
+                        className="form-control"
+                        value={newProduct.description}
+                        onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
+                        rows="3"
+                      ></textarea>
+                    </div>
+                    <div className="modal-footer">
+                      <button
+                        type="button"
+                        className="btn btn-secondary"
+                        onClick={() => setShowProductModal(false)}
+                      >
+                        Cancelar
+                      </button>
+                      <button type="submit" className="btn btn-warning">
+                        Salvar
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </GoogleOAuthProvider>
+  );
+}
+
+export default App;
+
+// Funções auxiliares para o status
+const getStatusColor = (status) => {
+  switch (status) {
+    case 'confirmado':
+      return 'success';
+    case 'pendente':
+      return 'warning';
+    case 'cancelado':
+      return 'danger';
+    default:
+      return 'secondary';
+  }
+};
+
+const getStatusText = (status) => {
+  switch (status) {
+    case 'confirmado':
+      return 'Confirmado';
+    case 'pendente':
+      return 'Pendente';
+    case 'cancelado':
+      return 'Cancelado';
+    default:
+      return 'Não definido';
+  }
+};

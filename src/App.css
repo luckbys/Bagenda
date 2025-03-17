@@ -1686,3 +1686,312 @@
         height: 32px;
       }
     }
+
+    /* Estilos para detalhes de confirmação */
+    .confirmation-details {
+      background: #f8f9fa;
+      border-radius: 0.5rem;
+      padding: 1.5rem;
+    }
+
+    .detail-item {
+      display: flex;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid #dee2e6;
+    }
+
+    .detail-item:last-child {
+      margin-bottom: 0;
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+
+    .detail-label {
+      font-weight: 600;
+      color: #6c757d;
+      width: 120px;
+      flex-shrink: 0;
+    }
+
+    .detail-value {
+      color: #212529;
+    }
+
+    /* Estilos para os cards de serviços */
+    .service-card {
+      background: white;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s ease;
+      border: 1px solid #e5e7eb;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .service-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .service-card::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 4px;
+      background: var(--category-color, #0d6efd);
+    }
+
+    .service-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+    }
+
+    .service-title {
+      font-weight: 600;
+      color: #1a1a1a;
+      margin: 0;
+    }
+
+    .service-price {
+      font-weight: 600;
+      color: var(--category-color, #0d6efd);
+    }
+
+    .service-duration {
+      font-size: 0.875rem;
+      color: #6b7280;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .service-description {
+      font-size: 0.875rem;
+      color: #6b7280;
+      margin: 0;
+    }
+
+    /* Estilos para os cards de profissionais */
+    .professional-card {
+      background: white;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s ease;
+      border: 1px solid #e5e7eb;
+    }
+
+    .professional-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .professional-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .professional-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--bs-primary);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+    }
+
+    .professional-info h3 {
+      margin: 0;
+      font-size: 1.125rem;
+      font-weight: 600;
+    }
+
+    .professional-specialties {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .specialty-badge {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 9999px;
+      font-weight: 500;
+      background: rgba(var(--bs-primary-rgb), 0.1);
+      color: var(--bs-primary);
+    }
+
+    .professional-schedule {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    .schedule-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.875rem;
+      color: #6b7280;
+      margin-bottom: 0.5rem;
+    }
+
+    /* Estilos para os cards de clientes */
+    .client-card {
+      background: white;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s ease;
+      border: 1px solid #e5e7eb;
+    }
+
+    .client-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .client-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+    }
+
+    .client-info h3 {
+      margin: 0;
+      font-size: 1.125rem;
+      font-weight: 600;
+    }
+
+    .client-contact {
+      font-size: 0.875rem;
+      color: #6b7280;
+    }
+
+    .client-history {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    .history-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .history-item:last-child {
+      border-bottom: none;
+    }
+
+    .history-service {
+      font-weight: 500;
+    }
+
+    .history-date {
+      font-size: 0.875rem;
+      color: #6b7280;
+    }
+
+    /* Estilos para o calendário adaptado */
+    .fc-event.salon-event {
+      border: none !important;
+      background: white !important;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      margin: 2px !important;
+      padding: 0.5rem !important;
+      border-radius: 0.5rem !important;
+      border-left: 4px solid var(--category-color, #0d6efd) !important;
+    }
+
+    .salon-event-content {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .salon-event-title {
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+
+    .salon-event-client {
+      font-size: 0.75rem;
+      color: #6b7280;
+    }
+
+    .salon-event-professional {
+      font-size: 0.75rem;
+      color: #6b7280;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    /* Estilos para o modal de agendamento */
+    .step-content {
+      animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .breadcrumb-item button {
+      color: #6c757d;
+      text-decoration: none;
+    }
+
+    .breadcrumb-item button:hover:not(:disabled) {
+      color: var(--bs-primary);
+    }
+
+    .breadcrumb-item.active button {
+      color: var(--bs-primary);
+      font-weight: 600;
+    }
+
+    /* Responsividade */
+    @media (max-width: 768px) {
+      .service-card,
+      .professional-card,
+      .client-card {
+        padding: 1rem;
+      }
+
+      .professional-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .detail-item {
+        flex-direction: column;
+        gap: 0.25rem;
+      }
+
+      .detail-label {
+        width: auto;
+      }
+    }
